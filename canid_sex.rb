@@ -41,6 +41,16 @@ def call_sex(falsepos, falseneg, n, y)
 	return sex
 end
 #----------------------------------------------------------------------------
+def build_species_hash
+	$species_hash = {} # Hash assigning individuals to species. Not defined if file not provided
+	File.open($options.species) do |f3|
+		while line = f3.gets
+			sam_arr = line.strip.split
+			$species_hash[sam_arr[0]] = $species_hash[sam_arr[1]]
+		end
+	end
+end
+#----------------------------------------------------------------------------
 def build_Y_hash
 	# Hashes of alleles in form in [X allele, Y allele]
 	$kf_alleles = { '19789242' => ['C','T'], '19789276' => ['T','G'], '19789374' => ['C','G'], '19789494' => ['C','G'] } # Y alleles only in kit fox
@@ -61,21 +71,22 @@ def calculate_Y_frequency
 	File.open($options.males) do |f2|
 		while line = f2.gets
 			male = line.strip
-			if $sample_sex[male].sum >= $options.minalleles  && $sample_sex[male][1] > 0 # Filter out low quality samples/false negatives
-				if $options.mean
-					denom += 1.0
-					yval = $sample_sex[male][1].to_f/$sample_sex[male].sum.to_f
-					y_sum += yval
-					unless $options.zscore.nil?
-						stdev.push(yval)
+			unless $sample_sex[male].nil?
+				if $sample_sex[male].sum >= $options.minalleles  && $sample_sex[male][1] > 0 # Filter out low quality samples/false negatives
+					if $options.mean
+						denom += 1.0
+						yval = $sample_sex[male][1].to_f/$sample_sex[male].sum.to_f
+						y_sum += yval
+						unless $options.zscore.nil?
+							stdev.push(yval)
+						end
+					elsif $options.min
+						yval = $sample_sex[male][1].to_f/$sample_sex[male].sum.to_f
+						ymin = yval if yval < ymin
+					else # Instead of using mean sample frequency, calculate overall rate based on total allele counts
+						y_sum += $sample_sex[male][1].to_f
+						denom += $sample_sex[male].sum.to_f
 					end
-					puts male + "\t" + yval.to_s + "\t" + $sample_sex[male].sum.to_s
-				elsif $options.min
-					yval = $sample_sex[male][1].to_f/$sample_sex[male].sum.to_f
-					ymin = yval if yval < ymin
-				else # Instead of using mean sample frequency, calculate overall rate based on total allele counts
-					y_sum += $sample_sex[male][1].to_f
-					denom += $sample_sex[male].sum.to_f
 				end
 			end
 		end
@@ -105,19 +116,36 @@ def process_vcf
 				end
 			elsif start
 				line_arr = line.strip.split("\t")
-				if line_arr[0] == "CM000039"
-					if $sex_alleles.keys.include?(line_arr[1])
+				if line_arr[0] == "CM000039" or line_arr[0] == "Coy_ZF_X" or line_arr[0] == "Coy_ZF_Y" or line_arr[0] == "KF_ZF_X" or line_arr[0] == "KF_ZF_Y"
+					sexsite = line_arr[1]
+					sexsite = (sexsite.to_i + 19789197).to_s unless line_arr[0] == "CM000039"
+					if $sex_alleles.keys.include?(sexsite)
 						alleles = [line_arr[3], line_arr[4].split(",")].flatten
 						# Get AD site
 						format = line_arr[8].split(":")
 						ad_index = format.index("AD")
-						x_index = alleles.index($sex_alleles[line_arr[1]][0])
-						y_index = alleles.index($sex_alleles[line_arr[1]][1])
+						x_index = alleles.index($sex_alleles[sexsite][0])
+						y_index = alleles.index($sex_alleles[sexsite][1])
 						# If reference X or Y alleles are not identified in dataset, will return nil.
 						for sample in @samples
 							sample_alleles = line_arr[@samples.index(sample) + 9].split(":")[ad_index].split(",")
 							$sample_sex[sample][0] += sample_alleles[x_index].to_i unless x_index.nil?
 							$sample_sex[sample][1] += sample_alleles[y_index].to_i unless y_index.nil?
+						end
+					elsif $kf_alleles.keys.include?(sexsite) and !$species_hash.nil?
+						alleles = [line_arr[3], line_arr[4].split(",")].flatten
+						# Get AD site
+						format = line_arr[8].split(":")
+						ad_index = format.index("AD")
+						x_index = alleles.index($kf_alleles[sexsite][0])
+						y_index = alleles.index($kf_alleles[sexsite][1])
+						# If reference X or Y alleles are not identified in dataset, will return nil.
+						for sample in @samples
+							if $sample_hash[sample] == "KF" # Some ugly hard-coding for the ages.
+								sample_alleles = line_arr[@samples.index(sample) + 9].split(":")[ad_index].split(",")
+								$sample_sex[sample][0] += sample_alleles[x_index].to_i unless x_index.nil?
+								$sample_sex[sample][1] += sample_alleles[y_index].to_i unless y_index.nil?
+							end
 						end
 					end
 				end
@@ -217,5 +245,10 @@ build_Y_hash
 if !FileTest.exist?($options.infile)
 	puts "Input file not found. Exiting."
 else
+	if !FileTest.exist?($options.species)
+		puts "Species assignment file not found. Ignoring species assignments."
+	else
+		build_species_hash
+	end
 	process_vcf
 end
