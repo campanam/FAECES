@@ -68,6 +68,7 @@ def calculate_Y_frequency
 	denom = 0.0 # Number of known males with estimated values/Number of total alleles
 	ymin = 1.0 # Minimum Y frequency
 	stdev = [] # Array of vals to calculate stdev for z-score
+	stdevxyz = [] # Array of vals to calculate stdev for z-score of Y-X ratio
 	File.open($options.males) do |f2|
 		while line = f2.gets
 			male = line.strip
@@ -80,6 +81,7 @@ def calculate_Y_frequency
 						unless $options.zscore.nil?
 							stdev.push(yval)
 						end
+						stdevxyz.push($sample_sex[male][1].to_f/$sample_sex[male][0].to_f) if $options.xyz != ""
 					elsif $options.min
 						yval = $sample_sex[male][1].to_f/$sample_sex[male].sum.to_f
 						ymin = yval if yval < ymin
@@ -91,7 +93,15 @@ def calculate_Y_frequency
 			end
 		end
 	end
-	$options.min ? $options.yfreq = ymin : $options.yfreq = y_sum/denom
+	if $options.min 
+		$options.yfreq = ymin
+		$stderr.puts "Empirical minimum Y-frequency: " + ymin.to_s
+	else
+		$options.yfreq = y_sum/denom
+	end
+	$stderr.puts "Empirical mean Y-frequency: " + (y_sum/denom).to_s
+	xyratio = (y_sum/(denom - y_sum))
+	$stderr.puts "Empirical mean Y-X ratio: " + xyratio.to_s
 	unless $options.zscore.nil?
 		total = 0.0
 		for sd in stdev
@@ -99,8 +109,21 @@ def calculate_Y_frequency
 		end
 		sd = Math.sqrt(total / (stdev.size - 1))
 		$options.yfreq += $options.zscore * sd
+		$stderr.puts "Empirical Y-frequency StDev: " + sd.to_s
 	end
-	$stderr.puts "Empirical Y-frequency: " + $options.yfreq.to_s
+	if $options.xyz != ""
+		total = 0.0
+		for sd in stdevxyz
+			total += (sd - xyratio) ** 2
+		end
+		sd = Math.sqrt(total / (stdevxyz.size - 1))
+		xyratio += $options.xyz * sd
+		$stderr.puts "Empirical Y-X ratio StDev: " + sd.to_s
+		$options.xyratio = xyratio
+		$stderr.puts "Empirical Y-X ratio cut-off: " + $options.xyratio.to_s
+	else
+		$stderr.puts "Empirical Y-frequency cut-off: " + $options.yfreq.to_s
+	end
 end
 #----------------------------------------------------------------------------
 def process_vcf
@@ -153,7 +176,11 @@ def process_vcf
 		end
 	end
 	calculate_Y_frequency if $options.males != ""
-	puts "Sample\tX-alleles\tY-alleles\tFalsePosY\tFalseNegY\tCalledSex"
+	if $options.xyratio != ""
+		puts "Sample\tX-alleles\tY-alleles\tY-XRatio\tCalledSex"
+	else
+		puts "Sample\tX-alleles\tY-alleles\tFalsePosY\tFalseNegY\tCalledSex"
+	end
 	for sample in @samples
 		n = $sample_sex[sample].sum
 		if n > 0
@@ -175,8 +202,20 @@ def process_vcf
 		else
 			falsepos = falseneg = "NA"
 		end
-		sex = call_sex(falsepos, falseneg,n, $sample_sex[sample][1])
-		puts sample + "\t" + $sample_sex[sample].join("\t") + "\t" + falsepos.to_s + "\t" + falseneg.to_s + "\t" + sex
+		if $options.xyratio != ""
+			xyratio = $sample_sex[sample][1].to_f/$sample_sex[sample][0].to_f
+			if n < $options.minalleles
+				sex = "?"
+			elsif xyratio < $options.xyratio
+				sex = "F"
+			else
+				sex = "M"
+			end
+			puts sample + "\t" + $sample_sex[sample].join("\t") + "\t" + xyratio.to_s + "\t" + sex
+		else
+			sex = call_sex(falsepos, falseneg,n, $sample_sex[sample][1])
+			puts sample + "\t" + $sample_sex[sample].join("\t") + "\t" + falsepos.to_s + "\t" + falseneg.to_s + "\t" + sex
+		end
 	end
 end
 #----------------------------------------------------------------------------
@@ -192,6 +231,8 @@ class Parser
 		args.minalleles = 10 # Minimum number of allele reads to call sex
 		args.yfreq = 0.5 # Y allele frequency
 		args.alpha = 0.05 # Alpha value
+		args.xyratio = "" # Use raw X-Y allele ratio to estimate sex
+		args.xyz = "" # Use z-score cut-off to determine X-Y allele ratio
 		opt_parser = OptionParser.new do |opts|
 			opts.banner = "Command-line usage: ruby canid_sex.rb [options]"
 			opts.separator ""
@@ -228,6 +269,15 @@ class Parser
 			opts.on("-a", "--alpha [VALUE]", Float, "Alpha value (Default = 0.05)") do |alph|
 				args.alpha = alph if alph != nil
 			end
+			opts.on("--yx [VALUE]", Float, "Use specified Y-X allele ratio to determine sex rather than statistical test.") do |xyratio|
+				args.xyratio = xyratio if xyratio != nil
+			end
+			opts.on("-Z [VALUE]", Float, "Use z-score cut-off to determine Y-X ratio.") do |xyz|
+				args.xyz = xyz if xyz != nil
+				args.zscore = xyz
+				args.mean = true
+				args.min = false # Set this all up, args.xyratio turned on later once calculated in calculate_Y_frequency
+			end
 			opts.on_tail("-h","--help", "Show help") do
 				puts opts
 				exit
@@ -246,7 +296,7 @@ if !FileTest.exist?($options.infile)
 	puts "Input file not found. Exiting."
 else
 	if !FileTest.exist?($options.species)
-		puts "Species assignment file not found. Ignoring species assignments."
+		$stderr.puts "Species assignment file not found. Ignoring species assignments."
 	else
 		build_species_hash
 	end
