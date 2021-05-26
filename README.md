@@ -9,6 +9,10 @@ Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.
 ## Prerequistes  
 `canid_sex.rb` requires [Ruby](www.ruby-lang.org) >= 2.4.  
 
+## Installation  
+Clone the repository: `git clone https://github.com/campanam/FAECES`  
+Make the scripts executable: `chmod +x *.rb`  
+
 ## Usage  
 `canid_sex.rb` performs sex determination using a previously called SNP VCF of the *ZFX/ZFY* region. Options include:  
 
