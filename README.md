@@ -13,7 +13,7 @@ Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.
 `canid_sex.rb` performs sex determination using a previously called SNP VCF of the *ZFX/ZFY* region. Options include:  
 
     -i, --input [FILE]       Input VCF file of SNPs in the *ZFX/ZFY* region. *Required*.
-    -s, --species [FILE]     Species assignment file. *Optional*.
+    -s, --species [FILE]     Species assignment file. *Optional and Experimental*.
     -k, --males [FILE]       List of known males to empirically calculate Y-allele frequency. *Optional*.
         --mean               Infer Y frequency using mean Y frequency across known male samples
     -z, --zscore [VALUE]     Infer mean Y frequency from known male samples and set z-score bound
@@ -26,4 +26,6 @@ Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.
     -h, --help               Show help
 
 The males file is a simple text list. See [canid_males_ZFX.txt](canid_sex_data/canid_males_ZFX.txt) for an example.  
+The species file is a CSV in the format `sample,species`. Use 'KF' to denote kit fox and use kit fox-specific Y alleles.  
+
 
