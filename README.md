@@ -25,5 +25,5 @@ Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.
     -Z [VALUE]               Use z-score cut-off to determine Y-X ratio.
     -h, --help               Show help
 
-The males file is a simple text list. See [canid_males_ZFX.txt](https://github.comcanid_sex_data/canid_males_ZFX.txt) for an example.  
+The males file is a simple text list. See [canid_males_ZFX.txt](canid_sex_data/canid_males_ZFX.txt) for an example.  
 
