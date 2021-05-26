@@ -12,7 +12,7 @@ Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.
 ## Usage  
 `canid_sex.rb` performs sex determination using a previously called SNP VCF of the *ZFX/ZFY* region. Options include:  
 
-    -i, --input [FILE]       Input VCF file of SNPs in the *ZFX/ZFY* region. *Required*.
+    -i, --input [FILE]       Input VCF file of SNPs in the ZFX/ZFY region. *Required*.
     -s, --species [FILE]     Species assignment file. *Optional and Experimental*.
     -k, --males [FILE]       List of known males to empirically calculate Y-allele frequency. *Optional*.
         --mean               Infer Y frequency using mean Y frequency across known male samples
