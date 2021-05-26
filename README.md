@@ -26,6 +26,12 @@ Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.
     -h, --help               Show help
 
 The males file is a simple text list. See [canid_males_ZFX.txt](canid_sex_data/canid_males_ZFX.txt) for an example.  
-The species file is a CSV in the format `sample,species`. Use 'KF' to denote kit fox and use kit fox-specific Y alleles.  
+The species file is a CSV in the format `sample,species`. Use 'KF' to denote kit fox and use kit-fox-specific Y alleles. *NB: this option is experimental and has not been fully tested or debugged.*  
+
+The final sex determination datasets are available [here](canid_sex_data). To obtain the raw sex determinations, use the following commands:  
+
+Coyotes: ``  
+
+Kit foxes: ``  
 
 
