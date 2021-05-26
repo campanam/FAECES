@@ -30,8 +30,7 @@ The species file is a CSV in the format `sample,species`. Use 'KF' to denote kit
 
 The final sex determination datasets are available [here](canid_sex_data). To obtain the raw sex determinations, use the following commands:  
 
-Coyotes: ``  
-
-Kit foxes: ``  
+Coyotes: `ruby canid_sex.rb -i Coy_ZFX.raw.vcf -k canid_males_ZFX.txt --min > Coy_ZFX_sex.tsv`  
+Kit foxes: `ruby canid_sex.rb -i KitFox_ZFX.raw.vcf -k canid_males_ZFX.txt --min > KitFox_ZFX_sex.tsv`  
 
 
