@@ -6,18 +6,21 @@ This repository contains scripts to analyze noninvasive DNA from Mojave desert c
 Please cite:  
 Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.C., Ralls, K.S., Wilbert, T.R., Boarman, R., Boarman, W.I. & Maldonado, J.E. In prep. An efficient noninvasive method for simultaneous species, individual, and sex identification of sympatric Mojave Desert canids via in-solution SNP capture.  
 
+## Prerequistes  
+`canid_sex.rb` requires [Ruby](www.ruby-lang.org) >= 2.4.  
+
 ## Usage  
 `canid_sex.rb` performs sex determination using a previously called SNP VCF of the *ZFX/ZFY* region. Options include:  
 
-    -i, --input [FILE]               Input VCF file
-    -s, --species [FILE]             Species assignment file
-    -k, --males [FILE]               List of known males to empirically calculate Y-allele frequency
-        --mean                       Infer Y frequency using mean frequency across samples
-    -z, --zscore [VALUE]             Infer mean Y frequency and set z-score bound
-        --min                        Infer Y frequency using minimum frequency across samples
+    -i, --input [FILE]               Input VCF file of SNPs in the *ZFX/ZFY* region. *Required*.
+    -s, --species [FILE]             Species assignment file. *Optional*.
+    -k, --males [FILE]               List of known males to empirically calculate Y-allele frequency. *Optional*.
+        --mean                       Infer Y frequency using mean Y frequency across known male samples
+    -z, --zscore [VALUE]             Infer mean Y frequency from known male samples and set z-score bound
+        --min                        Infer Y frequency using minimum Y frequency across known male samples
     -m, --minalleles [VALUE]         Minimum number of allele reads to call sex (Default = 10)
-    -y, --yfreq [VALUE]              Expected Y-allele frequency (Default = 0.5)
-    -a, --alpha [VALUE]              Alpha value (Default = 0.05)
+    -y, --yfreq [VALUE]              Expected Y-allele frequency (Default = 0.5). *Required if not inferred from known males*.
+    -a, --alpha [VALUE]              Alpha value for statistical significance (Default = 0.05).
         --yx [VALUE]                 Use specified Y-X allele ratio to determine sex rather than statistical test.
     -Z [VALUE]                       Use z-score cut-off to determine Y-X ratio.
     -h, --help                       Show help
