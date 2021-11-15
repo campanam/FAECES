@@ -4,7 +4,7 @@ This repository contains scripts to analyze noninvasive DNA from Mojave desert c
 
 ## Citation  
 Please cite:  
-Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.C., Ralls, K.S., Wilbert, T.R., Boarman, R., Boarman, W.I. & Maldonado, J.E. In prep. An efficient noninvasive method for simultaneous species, individual, and sex identification of sympatric Mojave Desert canids via in-solution SNP capture.  
+Parker, L.D., Campana, M.G., Quinta, J.D., Cypher, B., Rivera, I., Fleischer, R.C., Ralls, K., Wilbert, T.R., Boarman, R., Boarman, W.I. & Maldonado, J.E. 2021. An efficient method for simultaneous species, individual, and sex identification via in-solution SNP capture of low-quality scat samples. *Molecular Ecology Resources*. DOI: [10.1111/1755-0998.13552](https://onlinelibrary.wiley.com/doi/abs/10.1111/1755-0998.13552).  
 
 ## Prerequistes  
 `canid_sex.rb` requires [Ruby](www.ruby-lang.org) >= 2.4.  
